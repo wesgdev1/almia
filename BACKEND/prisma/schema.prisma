@@ -1,0 +1,58 @@
+// Prisma schema - Invitaciones Matrimonio
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum EstadoInvitacion {
+  PENDIENTE
+  CONFIRMADO
+  RECHAZADO
+}
+
+enum MetodoConfirmacion {
+  WEB
+  WHATSAPP
+  LLAMADA
+  MANUAL
+}
+
+// Administradores (novios / organizadores)
+model User {
+  id        String    @id @default(uuid()) @db.Uuid
+  email     String    @unique
+  name      String
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime? @updatedAt
+}
+
+// 1 invitacion = 1 link personalizado (ej: destino "Eduardo y Juliana", cupos 2)
+model Invitacion {
+  id                 String              @id @default(uuid()) @db.Uuid
+  destino            String
+  telefono           String?
+  email              String?
+  grupo              String?             // Familia novia, Amigos, Trabajo...
+  cupos              Int                 @default(1)
+  cuposConfirmados   Int                 @default(0)
+  estado             EstadoInvitacion    @default(PENDIENTE)
+  metodoConfirmacion MetodoConfirmacion?
+  mensaje            String?             // mensaje que deja el invitado al responder
+  notas              String?             // notas internas del admin
+  enviada            Boolean             @default(false)
+  fechaEnvio         DateTime?
+  fechaRespuesta     DateTime?
+  vistas             Int                 @default(0)
+  ultimaVista        DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime?           @updatedAt
+
+  @@index([estado])
+}

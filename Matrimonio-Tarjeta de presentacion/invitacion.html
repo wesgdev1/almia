@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2b1d14">
+<title>Kandy &amp; Welinton · 20 de Febrero</title>
+<meta name="description" content="Nos comprometimos en Nueva York y ahora nos casamos. Reserva la fecha: 20 de febrero.">
+<meta property="og:title" content="Nos casamos 💍 Reserva la fecha: 20 de febrero">
+<meta property="og:description" content="Del 31 de diciembre en Nueva York hasta el altar. Ven con nosotros.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Jost:wght@300;400;500&family=Parisienne&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+<nav id="nav" aria-label="Camino">
+  <a href="#s0" data-i="0" aria-label="Inicio"><i></i><span>Inicio</span></a>
+  <a href="#s1" data-i="1" aria-label="Nueva York"><i></i><span>New York</span></a>
+  <a href="#s2" data-i="2" aria-label="Fecha"><i></i><span>La fecha</span></a>
+  <a href="#s3" data-i="3" aria-label="Lugar"><i></i><span>El lugar</span></a>
+  <a href="#s4" data-i="4" aria-label="Código de vestimenta"><i></i><span>Vestimenta</span></a>
+  <a href="#s5" data-i="5" aria-label="Vestimenta mujeres"><i></i><span>Ellas</span></a>
+  <a href="#s6" data-i="6" aria-label="Vestimenta hombres"><i></i><span>Ellos</span></a>
+  <a href="#s7" data-i="7" aria-label="Información"><i></i><span>Info</span></a>
+  <a href="#s8" data-i="8" aria-label="Confirmar"><i></i><span>Confirmar</span></a>
+  <b id="bar"></b>
+</nav>
+
+<main id="journey">
+  <svg id="road" aria-hidden="true">
+    <path id="road-bg"/>
+    <path id="road-fg"/>
+  </svg>
+  <div id="walker" aria-hidden="true">♥</div>
+
+  <!-- 0 · INICIO -->
+  <section class="station hero" id="s0">
+    <img class="bgph hero-ph" data-par=".12" src="/img/abrazo.jpg" alt="" fetchpriority="high">
+    <canvas id="sparks"></canvas>
+    <div class="box">
+      <p class="kicker reveal">Nos casamos</p>
+      <h1 class="reveal d1"><span data-bind="n1">Kandy</span><em>&amp;</em><span data-bind="n2">Welinton</span></h1>
+      <p class="lead reveal d2">Y queremos que estés ahí.</p>
+      <!-- INVITACION PERSONALIZADA -->
+      <p class="lead reveal d2" id="inv-hero"><b id="inv-destino">Cargando invitación…</b><br><span id="inv-cupos"></span></p>
+      <p class="date reveal d3">20 · 02 · 2027</p>
+      <a href="#s1" class="go reveal d4">Sigue el camino <span>↓</span></a>
+    </div>
+  </section>
+
+  <!-- 1 · NUEVA YORK -->
+  <section class="station ny" id="s1">
+    <div class="box">
+      <p class="kicker reveal">Estación 1 · Nueva York</p>
+      <h2 class="reveal d1">31 de diciembre<br><em>2025</em></h2>
+      <figure class="ghost reveal d2"><img data-par="-.06" src="/img/propuesta.jpg" alt="El momento de la propuesta en Central Park" loading="lazy"></figure>
+      <p class="reveal d3">Con el año a punto de terminar, en la ciudad que nunca duerme, hicimos la pregunta más importante.</p>
+      <p class="big reveal d4">Dijo <em>sí</em>.</p>
+    </div>
+    <svg class="sky" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M0 120V80h20V60h18v20h12V40h14V20h6V8h4v12h6v20h14v30h16V50h18v30h14V64h20v16h12V30h10V14h4v16h10v50h18V70h20v50h16V84h22v36z"/>
+    </svg>
+  </section>
+
+  <!-- 2 · FECHA -->
+  <section class="station date-s" id="s2">
+    <img class="bgph ring-ph" data-par=".1" src="/img/anillo.jpg" alt="" loading="lazy">
+    <div class="box">
+      <p class="kicker reveal">Estación 2 · Reserva la fecha</p>
+      <div class="cal reveal d1">
+        <small>FEBRERO 2027</small>
+        <strong>20</strong>
+        <span>Sábado</span>
+      </div>
+      <div class="count reveal d2" id="count" aria-live="off">
+        <div><b id="cd">--</b><i>días</i></div>
+        <div><b id="ch">--</b><i>horas</i></div>
+        <div><b id="cm">--</b><i>min</i></div>
+        <div><b id="cs">--</b><i>seg</i></div>
+      </div>
+      <button class="btn reveal d3" id="ics">Guardar en mi calendario</button>
+    </div>
+  </section>
+
+  <!-- 3 · LUGAR -->
+  <section class="station place" id="s3">
+    <div class="box">
+      <p class="kicker reveal">Estación 3 · El gran día</p>
+      <h2 class="reveal d1">Dónde y cuándo</h2>
+      <a class="venue reveal d1" id="venue" target="_blank" rel="noopener" aria-label="Ver Palmas Golf en el mapa">
+        <img src="/img/palmas.png" alt="Vista aérea de Palmas Golf con la carpa del evento entre palmeras" loading="lazy">
+        <div class="venue-tx">
+          <strong data-bind="lugar">Palmas Golf</strong>
+          <span>📍 <span data-bind="ciudad">Villa del Rosario, Norte de Santander</span></span>
+        </div>
+      </a>
+      <ul class="info">
+        <li class="reveal d1"><span>✦</span><div><b>Ceremonia</b><p data-bind="ceremonia">Por confirmar · 4:00 pm</p></div></li>
+        <li class="reveal d2"><span>✦</span><div><b>Recepción</b><p data-bind="recepcion">Por confirmar · 6:00 pm</p></div></li>
+        <li class="reveal d3"><span>✦</span><div><b>Dress code</b><p><span data-bind="dress">Elegante</span> · <a href="#s4">ver colores</a></p></div></li>
+      </ul>
+      <a class="btn reveal d4" id="map" target="_blank" rel="noopener">Cómo llegar</a>
+    </div>
+  </section>
+
+  <!-- 4 · CÓDIGO DE VESTIMENTA -->
+  <section class="station dress" id="s4">
+    <div class="box">
+      <p class="kicker reveal">Estación 4 · Código de vestimenta</p>
+      <h2 class="reveal d1">Vístete en<br><em>tonos tierra</em></h2>
+      <p class="reveal d2">Queremos que todos combinemos con la paleta del día. Elige uno o varios de estos colores.</p>
+      <ul class="palette reveal d3">
+        <li style="--c:#e3cdb3"><i></i>Arena</li>
+        <li style="--c:#d2b48c"><i></i>Avena</li>
+        <li style="--c:#b8915f"><i></i>Camello</li>
+        <li style="--c:#c47a5a"><i></i>Terracota</li>
+        <li style="--c:#b66a32"><i></i>Caramelo</li>
+        <li style="--c:#9a5e58"><i></i>Rosa tierra</li>
+        <li style="--c:#9aa283"><i></i>Salvia</li>
+        <li style="--c:#66704f"><i></i>Oliva</li>
+        <li style="--c:#6b4a35"><i></i>Nogal</li>
+        <li style="--c:#7a4b52"><i></i>Ciruela</li>
+        <li style="--c:#3a2414"><i></i>Espresso</li>
+        <li style="--c:#b49a7f"><i></i>Taupe</li>
+      </ul>
+      <p class="note reveal d4">Ellas: sin <b>blanco</b> · Ellos: sin <b>negro</b></p>
+    </div>
+  </section>
+
+  <!-- 5 · MUJERES -->
+  <section class="station looks-s ellas" id="s5">
+    <div class="box">
+      <p class="kicker reveal">Estación 5 · Para ellas</p>
+      <h2 class="reveal d1">Vestimenta<br><em>mujeres</em></h2>
+      <div class="strip reveal d2" aria-label="Paleta de colores tierra"><i style="--c:#e3cdb3"></i><i style="--c:#d2b48c"></i><i style="--c:#b8915f"></i><i style="--c:#c47a5a"></i><i style="--c:#b66a32"></i><i style="--c:#9a5e58"></i><i style="--c:#9aa283"></i><i style="--c:#66704f"></i><i style="--c:#6b4a35"></i><i style="--c:#7a4b52"></i><i style="--c:#3a2414"></i><i style="--c:#b49a7f"></i></div>
+      <ul class="rules reveal d3">
+        <li><span>✓</span>Vestidos y conjuntos en cualquier tono tierra de la paleta.</li>
+        <li class="no"><span>✕</span>El <b>blanco</b> está reservado para la novia.</li>
+      </ul>
+      <div class="looks reveal d4">
+        <!-- Reemplaza cada <figure class="empty"> por: <figure><img src="/img/mujer1.jpg" alt="Ejemplo de look" loading="lazy"></figure> -->
+        <figure class="empty"><span>Próximamente</span></figure>
+        <figure class="empty"><span>Próximamente</span></figure>
+        <figure class="empty"><span>Próximamente</span></figure>
+        <figure class="empty"><span>Próximamente</span></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6 · HOMBRES -->
+  <section class="station looks-s ellos" id="s6">
+    <div class="box">
+      <p class="kicker reveal">Estación 6 · Para ellos</p>
+      <h2 class="reveal d1">Vestimenta<br><em>hombres</em></h2>
+      <div class="strip reveal d2" aria-label="Paleta de colores tierra"><i style="--c:#e3cdb3"></i><i style="--c:#d2b48c"></i><i style="--c:#b8915f"></i><i style="--c:#c47a5a"></i><i style="--c:#b66a32"></i><i style="--c:#9a5e58"></i><i style="--c:#9aa283"></i><i style="--c:#66704f"></i><i style="--c:#6b4a35"></i><i style="--c:#7a4b52"></i><i style="--c:#3a2414"></i><i style="--c:#b49a7f"></i></div>
+      <ul class="rules reveal d3">
+        <li><span>✓</span><b>Camisa</b> blanca o de tono claro.</li>
+        <li><span>✓</span><b>Pantalón</b> beige o en tonos tierra.</li>
+        <li class="no"><span>✕</span>Por favor evita el <b>negro</b>.</li>
+      </ul>
+      <div class="looks reveal d4">
+        <!-- Reemplaza cada <figure class="empty"> por: <figure><img src="/img/hombre1.jpg" alt="Ejemplo de look" loading="lazy"></figure> -->
+        <figure class="empty"><span>Próximamente</span></figure>
+        <figure class="empty"><span>Próximamente</span></figure>
+        <figure class="empty"><span>Próximamente</span></figure>
+        <figure class="empty"><span>Próximamente</span></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 7 · INFORMACIÓN -->
+  <section class="station guide" id="s7">
+    <div class="box">
+      <p class="kicker reveal">Estación 7 · Información</p>
+      <h2 class="reveal d1">Antes de<br><em>llegar</em></h2>
+      <ul class="info">
+        <li class="reveal d1"><span>✉</span><div><b>Confirmación</b><p>Comunícate con <span data-bind="contacto">Welinton</span> para confirmar tu asistencia.</p></div></li>
+        <li class="reveal d2"><span>✦</span><div><b>Lluvia de sobres</b><p>Tu presencia es nuestro mejor regalo. Si deseas tener un detalle con nosotros, tendremos lluvia de sobres.</p></div></li>
+        <li class="reveal d3"><span>♡</span><div><b>Solo adultos</b><p>Queremos que disfrutes plenamente esta celebración pensada para adultos. Agradecemos que en esta ocasión los niños se queden en casa.</p></div></li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 8 · RSVP -->
+  <section class="station rsvp" id="s8">
+    <img class="bgph end-ph" data-par="-.08" src="/img/abrazo.jpg" alt="" loading="lazy">
+    <div class="box">
+      <p class="kicker reveal">Estación 8 · Última parada</p>
+      <h2 class="reveal d1">¿Nos acompañas?</h2>
+      <p class="reveal d2" id="rsvp-txt">Confirma tu asistencia para que tu lugar esté listo.</p>
+      <!-- INVITACION PERSONALIZADA: formulario de confirmacion -->
+      <div class="reveal d3" id="rsvp-form" style="display:grid;gap:10px;margin:0 auto 16px;max-width:320px">
+        <label>¿Cuántos asistirán?
+          <select id="rsvp-cupos" style="margin-left:6px;padding:6px 10px;font:inherit"></select>
+        </label>
+        <textarea id="rsvp-msg" rows="3" maxlength="500" placeholder="Déjanos un mensaje (opcional)" style="padding:8px;font:inherit"></textarea>
+      </div>
+      <button class="btn reveal d3" id="yes" type="button">¡Sí, allí estaré!</button>
+      <button class="btn ghost reveal d4" id="no" type="button">No podré ir</button>
+      <p class="reveal d4" id="rsvp-status" aria-live="polite"></p>
+      <p class="sign reveal d4"><span data-bind="n1">Kandy</span> &amp; <span data-bind="n2">Welinton</span></p>
+    </div>
+  </section>
+</main>
+
+<script src="/app.js"></script>
+<script src="/invitacion.js"></script>
+</body>
+</html>

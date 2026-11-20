@@ -1,0 +1,32 @@
+{
+  "name": "invitaciones-api",
+  "version": "1.0.0",
+  "description": "API de invitaciones de matrimonio con confirmación por link personalizado",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "prisma generate && cross-env NODE_ENV=production node index",
+    "dev": "cross-env NODE_ENV=development nodemon index",
+    "prisma:generate": "prisma generate",
+    "prisma:push": "prisma db push",
+    "prisma:studio": "prisma studio",
+    "seed": "node prisma/seed.js"
+  },
+  "keywords": [],
+  "author": "Welinton",
+  "license": "ISC",
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.6",
+    "cross-env": "^10.1.0",
+    "dotenv": "^18.0.10",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "socket.io": "^4.8.4"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.14",
+    "prisma": "^6.19.3"
+  }
+}

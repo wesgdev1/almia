@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Admin · Invitaciones</title>
+<!-- Estilos basicos de prueba (se rediseña despues) -->
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.4 system-ui, sans-serif; background: #f6f2ee; color: #2b1d14; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: #2b1d14; color: #fff; }
+  main { max-width: 1200px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 18px; margin: 0; }
+  h2 { font-size: 16px; margin: 0 0 10px; }
+  section { background: #fff; border-radius: 10px; padding: 16px; margin-bottom: 16px; box-shadow: 0 1px 3px #0001; }
+  input, select, textarea, button { font: inherit; padding: 8px 10px; border: 1px solid #ccb; border-radius: 6px; }
+  button { cursor: pointer; background: #fff; }
+  button.primary { background: #b66a32; border-color: #b66a32; color: #fff; }
+  button.danger { color: #a33; border-color: #e3b5b5; }
+  button.sm { padding: 4px 8px; font-size: 13px; }
+  .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .row > input, .row > select { flex: 1 1 140px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+  .stat { background: #f6f2ee; border-radius: 8px; padding: 10px; }
+  .stat b { display: block; font-size: 24px; }
+  .stat small { color: #6b5a4c; }
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 900px; }
+  th, td { text-align: left; padding: 8px; border-bottom: 1px solid #eee; vertical-align: top; }
+  th { font-size: 12px; text-transform: uppercase; color: #6b5a4c; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+  .PENDIENTE { background: #fff3cd; color: #7a5b00; }
+  .CONFIRMADO { background: #d7f0dc; color: #1e6b32; }
+  .RECHAZADO { background: #f6d5d5; color: #8a2a2a; }
+  .muted { color: #8a7a6c; font-size: 12px; }
+  .actions { display: flex; flex-wrap: wrap; gap: 4px; }
+  #login { max-width: 360px; margin: 10vh auto; }
+  #login form { display: grid; gap: 10px; }
+  .error { color: #a33; min-height: 1.2em; }
+  #toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: #2b1d14; color: #fff; padding: 10px 16px; border-radius: 8px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  #toast.on { opacity: 1; }
+  [hidden] { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN (solo admin) -->
+<section id="login" hidden>
+  <h2>Ingreso administrador</h2>
+  <form id="login-form">
+    <input name="email" type="email" placeholder="Email" required autocomplete="username">
+    <input name="password" type="password" placeholder="Contraseña" required autocomplete="current-password">
+    <button class="primary">Entrar</button>
+    <p class="error" id="login-error"></p>
+  </form>
+</section>
+
+<!-- PANEL -->
+<div id="panel" hidden>
+  <header>
+    <h1>Invitaciones · Kandy &amp; Welinton</h1>
+    <div class="row">
+      <span id="admin-name" class="muted" style="color:#ddd"></span>
+      <a href="/" target="_blank" style="color:#fff">Ver index</a>
+      <button class="sm" id="logout">Salir</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <h2>Resumen</h2>
+      <div class="stats" id="stats"></div>
+    </section>
+
+    <section>
+      <h2 id="form-title">Nueva invitación</h2>
+      <form id="inv-form" class="row">
+        <input name="destino" placeholder="Destino (ej: Eduardo y Juliana)" required style="flex:2 1 240px">
+        <input name="cupos" type="number" min="1" value="1" placeholder="Cupos" required style="flex:0 1 90px">
+        <input name="telefono" placeholder="Teléfono WhatsApp">
+        <input name="grupo" placeholder="Grupo (Familia, Amigos…)" list="grupos">
+        <datalist id="grupos"></datalist>
+        <input name="notas" placeholder="Notas internas">
+        <button class="primary" id="form-submit">Crear</button>
+        <button type="button" id="form-cancel" hidden>Cancelar</button>
+      </form>
+    </section>
+
+    <section>
+      <div class="row" style="justify-content:space-between;margin-bottom:10px">
+        <h2 style="margin:0">Invitaciones <span class="muted" id="count"></span></h2>
+        <div class="row">
+          <input id="f-q" placeholder="Buscar…">
+          <select id="f-estado">
+            <option value="">Todos</option>
+            <option value="PENDIENTE">Pendientes</option>
+            <option value="CONFIRMADO">Confirmados</option>
+            <option value="RECHAZADO">Rechazados</option>
+          </select>
+          <select id="f-enviada">
+            <option value="">Enviadas y no</option>
+            <option value="true">Enviadas</option>
+            <option value="false">Sin enviar</option>
+          </select>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Destino</th><th>Grupo</th><th>Cupos</th><th>Estado</th>
+              <th>Enviada</th><th>Vistas</th><th>Mensaje</th><th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="/admin.js"></script>
+</body>
+</html>
