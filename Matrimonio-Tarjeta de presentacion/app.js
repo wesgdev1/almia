@@ -101,7 +101,7 @@ $('#ics').onclick = () => {
   a.download = 'boda.ics'; a.click();
 };
 
-// Chispas color tierra (canvas ligero, se pausa fuera de pantalla)
+// Chispas doradas (canvas ligero, se pausa fuera de pantalla)
 const cv = $('#sparks'), cx = cv.getContext('2d');
 let W, Hh, ps = [], run = true;
 function size() { W = cv.width = cv.clientWidth; Hh = cv.height = cv.clientHeight; }
@@ -110,7 +110,7 @@ const mk = (x, y, burst) => ({
   x: x ?? Math.random() * W, y: y ?? Math.random() * Hh, r: Math.random() * 2 + .6,
   vx: burst ? (Math.random() - .5) * 6 : (Math.random() - .5) * .3,
   vy: burst ? (Math.random() - .5) * 6 : Math.random() * .5 + .15,
-  a: 1, life: burst ? 1 : 0, c: Math.random() > .5 ? '217,168,108' : '212,165,154'
+  a: 1, life: burst ? 1 : 0, c: Math.random() > .5 ? '232,194,122' : '244,182,194'
 });
 for (let i = 0; i < 45; i++) ps.push(mk());
 function frame() {
