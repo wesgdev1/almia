@@ -40,14 +40,21 @@ $('#s0').classList.add('in');
 navLinks[0].classList.add('on');
 
 // Camino sinuoso + perrita que avanza con el scroll
-// Optimizado para celular: el recorrido se precalcula una vez (tabla de puntos)
-// y en cada frame solo se interpola; el parallax usa posiciones cacheadas (sin leer el layout).
+// Súper fluido en celular:
+//  - La perrita es position:fixed: el navegador no la arrastra con el scroll y el JS la "corrige"
+//    un frame tarde (eso causaba los tirones). Su posición en pantalla la calcula solo el JS.
+//  - Avanza por la LONGITUD del camino (recorrido en X: sube/baja y cruza de lado a lado).
+//  - El avance se suaviza con interpolación en requestAnimationFrame, que se apaga sola al quedar quieta.
+//  - El camino se precalcula una vez (tabla de puntos); por frame solo se interpola.
 const main = $('#journey'), fg = $('#road-fg'), bg = $('#road-bg'), walker = $('#walker'), bar = $('#bar');
 const pars = $$('[data-par]');
-let L = 1, H = 1, W0 = 0, pts = new Float32Array(0), N = 0, mainTop = 0, lastP = -1;
+let L = 1, H = 1, W0 = 0, pts = new Float32Array(0), N = 0, mainTop = 0, mainLeft = 0;
+let prog = null, raf = 0, lastDash = -1;   // prog = avance suavizado (0..1)
 function buildRoad() {
   const w = main.clientWidth;
-  W0 = w; H = main.clientHeight; mainTop = main.offsetTop;
+  W0 = w; H = main.clientHeight;
+  const r = main.getBoundingClientRect();
+  mainTop = r.top + scrollY; mainLeft = r.left;
   $('#road').setAttribute('viewBox', `0 0 ${w} ${H}`);
   let d = `M${w / 2} 60`, py = 60;
   stations.forEach((s, i) => {
@@ -67,32 +74,37 @@ function buildRoad() {
   }
   // Posición/alto de la sección de cada foto con parallax (cacheado)
   pars.forEach(el => { const s = el.closest('.station') || el.parentElement; el._t = s.offsetTop; el._h = s.offsetHeight; el._k = +el.dataset.par; });
-  lastP = -1;
-  update();
+  prog = null; lastDash = -1;
+  walkFrame();
+  walker.classList.add('ready');
 }
-function update() {
+function walkFrame() {
+  raf = 0;
+  if (!N) return;
   const sy = scrollY, vh = innerHeight;
-  const p = Math.min(1, Math.max(0, (sy + vh * .5) / H));
-  if (p !== lastP) {
-    lastP = p;
-    const f = p * (N - 1), i = Math.min(N - 2, f | 0), t = f - i, j = i * 2;
-    const x = pts[j] + (pts[j + 2] - pts[j]) * t, y = pts[j + 1] + (pts[j + 3] - pts[j + 1]) * t;
-    walker.style.transform = `translate3d(${x}px,${y}px,0)`;
-    fg.style.strokeDashoffset = L * (1 - p);
-    bar.style.transform = `scaleX(${Math.min(1, sy / Math.max(1, H - vh))})`;
-  }
+  // Avance objetivo: qué tanto del camino corresponde al centro de la pantalla
+  const pt = Math.min(1, Math.max(0, (sy + vh * .5 - mainTop) / H));
+  prog = prog === null ? pt : prog + (pt - prog) * .2;    // suavizado del avance
+  const f = prog * (N - 1), i = Math.min(N - 2, f | 0), t = f - i, j = i * 2;
+  const x = pts[j] + (pts[j + 2] - pts[j]) * t, y = pts[j + 1] + (pts[j + 3] - pts[j + 1]) * t;
+  // Coordenadas de pantalla (fixed): punto del camino menos lo desplazado
+  walker.style.transform = `translate3d(${(mainLeft + x).toFixed(2)}px,${(mainTop + y - sy).toFixed(2)}px,0)`;
+  const dash = L * (1 - prog);
+  if (Math.abs(dash - lastDash) > .5) { fg.style.strokeDashoffset = dash; lastDash = dash; }
+  bar.style.transform = `scaleX(${Math.min(1, sy / Math.max(1, H - vh))})`;
   // Parallax suave de fotos (solo las visibles)
   for (const el of pars) {
     const top = mainTop + el._t - sy;
     if (top + el._h < -100 || top > vh + 100) continue;
-    el.style.transform = `translate3d(0,${((top + el._h / 2) - vh / 2) * el._k}px,0)`;
+    el.style.transform = `translate3d(0,${(((top + el._h / 2) - vh / 2) * el._k).toFixed(1)}px,0)`;
   }
+  if (Math.abs(pt - prog) * L > .3) raf = requestAnimationFrame(walkFrame);  // sigue hasta asentarse
 }
-let tick = false;
-addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(() => { update(); tick = false; }); } }, { passive: true });
+const kick = () => { if (!raf) raf = requestAnimationFrame(walkFrame); };
+addEventListener('scroll', kick, { passive: true });
 // En celular la barra del navegador cambia el alto al hacer scroll: solo reconstruimos si cambió el tamaño real
 let rz;
-const rebuild = () => { clearTimeout(rz); rz = setTimeout(() => { if (main.clientWidth !== W0 || main.clientHeight !== H) buildRoad(); else update(); }, 120); };
+const rebuild = () => { clearTimeout(rz); rz = setTimeout(() => { if (main.clientWidth !== W0 || main.clientHeight !== H) buildRoad(); else { mainLeft = main.getBoundingClientRect().left; kick(); } }, 120); };
 addEventListener('resize', rebuild);
 if ('ResizeObserver' in window) new ResizeObserver(rebuild).observe(main);
 addEventListener('load', buildRoad);
