@@ -39,78 +39,103 @@ stations.forEach(s => io.observe(s));
 $('#s0').classList.add('in');
 navLinks[0].classList.add('on');
 
-// Camino sinuoso + perrita que avanza con el scroll
-// MODO SÚPER FLUIDO (Chrome/Android, Safari 26+, Edge): CSS Scroll-Driven Animations.
-//   La perrita recorre el camino con `offset-path` y `animation-timeline: scroll()`:
-//   el navegador la mueve en el mismo hilo del scroll (compositor), cero JS por frame,
-//   va pegada al dedo. Igual la línea dorada, la barra de progreso y el parallax de fotos.
-// MODO RESPALDO (navegadores viejos): JS con requestAnimationFrame y tabla precalculada.
-const main = $('#journey'), fg = $('#road-fg'), bg = $('#road-bg'), walker = $('#walker'), bar = $('#bar');
+// ===================================================================================
+// Camino sinuoso + perrita que avanza con el scroll — SÚPER FLUIDO
+// Todo lo que se mueve con el scroll usa SOLO `transform` y corre en el compositor
+// (el mismo hilo que hace el scroll), así nunca se atrasa ni da tirones:
+//  - Perrita: Web Animations + ScrollTimeline con ~600 fotogramas translate3d precalculados,
+//    espaciados uniformemente en vertical → velocidad constante, sigue las curvas en X.
+//  - Línea dorada: un recorte que baja + su contenido que sube (contra-desplazamiento):
+//    se "revela" hasta la perrita sin repintar el SVG.
+//  - Barra de progreso: scaleX en la misma línea de tiempo.
+//  - Respaldo para navegadores sin ScrollTimeline: requestAnimationFrame con los mismos cálculos.
+// ===================================================================================
+const main = $('#journey'), road = $('#road'), fg = $('#road-fg'), bg = $('#road-bg'), walker = $('#walker'), bar = $('#bar');
 const pars = $$('[data-par]');
 pars.forEach(el => el.style.setProperty('--k', el.dataset.par));
-const SDA = CSS.supports?.('animation-timeline', 'scroll()') && CSS.supports?.('offset-path', 'path("M0 0")')
-  && !matchMedia('(prefers-reduced-motion: reduce)').matches;
-document.documentElement.classList.toggle('sda', !!SDA);
+const CSS_PAR = !!CSS.supports?.('animation-timeline', 'view()');           // parallax por CSS
+document.documentElement.classList.toggle('sda', CSS_PAR);
+const ST = typeof ScrollTimeline === 'function'
+  ? new ScrollTimeline({ source: document.scrollingElement || document.documentElement, axis: 'block' }) : null;
 
-let L = 1, H = 1, W0 = 0, pts = new Float32Array(0), N = 0, mainTop = 0, mainLeft = 0, raf = 0, lastDash = -1;
+// Mover la línea dorada a su propia capa recortable
+const NS = 'http://www.w3.org/2000/svg';
+const clip = document.createElement('div'), inner = document.createElement('div'), svgFg = document.createElementNS(NS, 'svg');
+clip.id = 'road-clip'; inner.id = 'road-inner'; clip.setAttribute('aria-hidden', 'true');
+svgFg.appendChild(fg); inner.appendChild(svgFg); clip.appendChild(inner); road.after(clip);
+fg.style.strokeDasharray = 'none';
+
+const K = 600;                                    // fotogramas del recorrido
+let W0 = 0, H = 0, y0 = 0, y1 = 1, WX = new Float32Array(K + 1), WY = new Float32Array(K + 1), anims = [];
+
 function buildRoad() {
   const w = main.clientWidth;
   W0 = w; H = main.clientHeight;
-  const r = main.getBoundingClientRect();
-  mainTop = r.top + scrollY; mainLeft = r.left;
-  $('#road').setAttribute('viewBox', `0 0 ${w} ${H}`);
   let d = `M${w / 2} 60`, py = 60;
   stations.forEach((s, i) => {
     const y = s.offsetTop + s.offsetHeight, x = i % 2 ? w * .14 : w * .86, m = (py + y) / 2;
     d += ` C${i % 2 ? w * .86 : w * .14} ${m - (y - py) * .1}, ${i % 2 ? w * .14 : w * .86} ${m + (y - py) * .1}, ${i === stations.length - 1 ? w / 2 : x} ${y - (i === stations.length - 1 ? 90 : 0)}`;
     py = y;
   });
+  for (const sv of [road, svgFg]) { sv.setAttribute('viewBox', `0 0 ${w} ${H}`); sv.setAttribute('width', w); sv.setAttribute('height', H); }
   bg.setAttribute('d', d); fg.setAttribute('d', d);
-  L = fg.getTotalLength();
-  fg.style.strokeDasharray = L;
-  if (SDA) {
-    // El navegador hace todo: solo le damos el camino y su largo
-    walker.style.offsetPath = `path("${d}")`;
-    fg.style.setProperty('--L', `${L}px`);
-  } else {
-    // Tabla de puntos: 1 muestra cada ~6px de camino
-    N = Math.max(2, Math.min(2500, Math.ceil(L / 6)));
-    pts = new Float32Array(N * 2);
-    for (let i = 0; i < N; i++) {
-      const q = fg.getPointAtLength(L * i / (N - 1));
-      pts[i * 2] = q.x; pts[i * 2 + 1] = q.y;
-    }
-    pars.forEach(el => { const s = el.closest('.station') || el.parentElement; el._t = s.offsetTop; el._h = s.offsetHeight; el._k = +el.dataset.par; });
-    lastDash = -1;
-    walkFrame();
+  clip.style.height = inner.style.height = `${H}px`;
+
+  // Muestras densas del camino (por longitud) → luego fotogramas uniformes en Y
+  const L = bg.getTotalLength(), n = Math.max(2, Math.min(4000, Math.ceil(L / 3)));
+  const xs = new Float32Array(n + 1), ys = new Float32Array(n + 1);
+  for (let i = 0; i <= n; i++) {
+    const q = bg.getPointAtLength(L * i / n);
+    xs[i] = q.x; ys[i] = i ? Math.max(q.y, ys[i - 1]) : q.y;
   }
+  y0 = ys[0]; y1 = ys[n];
+  for (let k = 0, j = 0; k <= K; k++) {
+    const y = y0 + (y1 - y0) * k / K;
+    while (j < n - 1 && ys[j + 1] < y) j++;
+    const dy = ys[j + 1] - ys[j], t = dy > 0 ? Math.min(1, Math.max(0, (y - ys[j]) / dy)) : 0;
+    WX[k] = xs[j] + (xs[j + 1] - xs[j]) * t; WY[k] = y;
+  }
+  if (!CSS_PAR) pars.forEach(el => { const s = el.closest('.station') || el.parentElement; el._t = s.offsetTop; el._h = s.offsetHeight; el._k = +el.dataset.par; });
+
+  anims.forEach(an => an.cancel()); anims = [];
+  if (ST) {
+    const o = { timeline: ST, fill: 'both', easing: 'linear' };
+    const kf = [];
+    for (let k = 0; k <= K; k++) kf.push({ transform: `translate3d(${WX[k].toFixed(1)}px,${WY[k].toFixed(1)}px,0)` });
+    anims.push(walker.animate(kf, o));
+    anims.push(clip.animate([{ transform: `translate3d(0,${y0 - H}px,0)` }, { transform: `translate3d(0,${y1 - H}px,0)` }], o));
+    anims.push(inner.animate([{ transform: `translate3d(0,${H - y0}px,0)` }, { transform: `translate3d(0,${H - y1}px,0)` }], o));
+    anims.push(bar.animate([{ transform: 'scaleX(0)' }, { transform: 'scaleX(1)' }], o));
+  }
+  paint();
   walker.classList.add('ready');
 }
-// Respaldo JS (mismo recorrido que el modo CSS: avance = scroll / scroll máximo)
-function walkFrame() {
+
+// Respaldo (sin ScrollTimeline) y parallax JS (sin view-timeline)
+let raf = 0;
+function paint() {
   raf = 0;
-  if (!N) return;
   const sy = scrollY, vh = innerHeight;
-  const p = Math.min(1, Math.max(0, sy / Math.max(1, document.documentElement.scrollHeight - vh)));
-  const f = p * (N - 1), i = Math.min(N - 2, f | 0), t = f - i, j = i * 2;
-  const x = pts[j] + (pts[j + 2] - pts[j]) * t, y = pts[j + 1] + (pts[j + 3] - pts[j + 1]) * t;
-  walker.style.transform = `translate3d(${(mainLeft + x).toFixed(1)}px,${(mainTop + y - sy).toFixed(1)}px,0)`;
-  const dash = L * (1 - p);
-  if (Math.abs(dash - lastDash) > .5) { fg.style.strokeDashoffset = dash; lastDash = dash; }
-  bar.style.transform = `scaleX(${p})`;
-  for (const el of pars) {
-    const top = mainTop + el._t - sy;
+  if (!ST) {
+    const p = Math.min(1, Math.max(0, sy / Math.max(1, document.documentElement.scrollHeight - vh)));
+    const f = p * K, k = Math.min(K - 1, f | 0), t = f - k;
+    const x = WX[k] + (WX[k + 1] - WX[k]) * t, y = WY[k] + (WY[k + 1] - WY[k]) * t;
+    walker.style.transform = `translate3d(${x.toFixed(1)}px,${y.toFixed(1)}px,0)`;
+    clip.style.transform = `translate3d(0,${(y - H).toFixed(1)}px,0)`;
+    inner.style.transform = `translate3d(0,${(H - y).toFixed(1)}px,0)`;
+    bar.style.transform = `scaleX(${p})`;
+  }
+  if (!CSS_PAR) for (const el of pars) {
+    const top = el._t - sy;
     if (top + el._h < -100 || top > vh + 100) continue;
     el.style.transform = `translate3d(0,${(((top + el._h / 2) - vh / 2) * el._k).toFixed(1)}px,0)`;
   }
 }
-if (!SDA) addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(walkFrame); }, { passive: true });
-// En celular la barra del navegador cambia el alto al hacer scroll: solo reconstruimos si cambió el tamaño real
+if (!ST || !CSS_PAR) addEventListener('scroll', () => { if (!raf) raf = requestAnimationFrame(paint); }, { passive: true });
+
+// Reconstruir solo si cambia el tamaño real (la barra del navegador del celular no cuenta)
 let rz;
-const rebuild = () => { clearTimeout(rz); rz = setTimeout(() => {
-  if (main.clientWidth !== W0 || main.clientHeight !== H) buildRoad();
-  else if (!SDA) { mainLeft = main.getBoundingClientRect().left; walkFrame(); }
-}, 120); };
+const rebuild = () => { clearTimeout(rz); rz = setTimeout(() => { if (main.clientWidth !== W0 || main.clientHeight !== H) buildRoad(); }, 150); };
 addEventListener('resize', rebuild);
 if ('ResizeObserver' in window) new ResizeObserver(rebuild).observe(main);
 addEventListener('load', buildRoad);

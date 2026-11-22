@@ -5,7 +5,7 @@
   --serif:'Fraunces',Georgia,serif; --script:'Parisienne','Snell Roundhand',cursive; --sans:Jost,system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html{scroll-behavior:smooth;scroll-snap-type:y proximity}
+html{scroll-behavior:smooth}
 body{background:var(--deep);color:var(--ivory);font-family:var(--sans);overflow-x:hidden;line-height:1.5}
 
 /* Columna tipo móvil, centrada en desktop */
@@ -15,11 +15,15 @@ body{background:var(--deep);color:var(--ivory);font-family:var(--sans);overflow-
 
 /* Camino */
 #road{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
-#road path{fill:none;stroke-linecap:round}
+#road path,#road-clip path{fill:none;stroke-linecap:round}
+/* Línea dorada: se revela con recorte + contra-desplazamiento (solo transform, sin repintar) */
+#road-clip{position:absolute;left:0;top:0;width:100%;overflow:hidden;pointer-events:none;z-index:1;will-change:transform}
+#road-inner{width:100%;will-change:transform}
+#road-inner svg{display:block}
 #road-bg{stroke:rgba(246,237,225,.18);stroke-width:3;stroke-dasharray:2 12}
 #road-fg{stroke:var(--gold);stroke-width:3.5}
 /* Perrita caminante: solo se anima transform/opacity (GPU), sin repintar */
-#walker{position:fixed;left:0;top:0;z-index:3;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;
+#walker{position:absolute;left:0;top:0;z-index:3;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;
   background:radial-gradient(circle at 50% 40%,#fff,var(--ivory));border:2px solid var(--gold);
   box-shadow:0 4px 16px #0008;will-change:transform;backface-visibility:hidden;opacity:0;transition:opacity .3s}
 #walker.ready{opacity:1}
@@ -32,16 +36,9 @@ body{background:var(--deep);color:var(--ivory);font-family:var(--sans);overflow-
 @keyframes halo{from{transform:scale(1);opacity:.7}to{transform:scale(1.45);opacity:0}}
 @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
 
-/* ===== Modo súper fluido: animaciones guiadas por el scroll (corren en el hilo del scroll) ===== */
-html.sda #walker{position:absolute;margin:0;transform:none;offset-rotate:0deg;offset-anchor:50% 50%;offset-distance:0%;
-  animation:walk linear both;animation-timeline:scroll(root block)}
-html.sda #road-fg{animation:draw linear both;animation-timeline:scroll(root block)}
-html.sda #bar{animation:grow linear both;animation-timeline:scroll(root block)}
+/* ===== Parallax de fotos guiado por el scroll (solo transform, corre en el compositor) ===== */
 html.sda .station{view-timeline:--st block}
 html.sda [data-par]{animation:par linear both;animation-timeline:--st;animation-range:cover 0% cover 100%}
-@keyframes walk{to{offset-distance:100%}}
-@keyframes draw{from{stroke-dashoffset:var(--L)}to{stroke-dashoffset:0}}
-@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
 @keyframes par{from{transform:translate3d(0,calc(var(--k) * 100vh),0)}to{transform:translate3d(0,calc(var(--k) * -100vh),0)}}
 
 /* Nav */
@@ -60,7 +57,7 @@ html.sda [data-par]{animation:par linear both;animation-timeline:--st;animation-
 
 /* Estaciones */
 .station{position:relative;min-height:100vh;min-height:100svh;display:grid;place-items:center;padding:90px 28px 70px;
-  text-align:center;scroll-snap-align:start;z-index:2}
+  text-align:center;z-index:2}
 .box{position:relative;z-index:2;width:100%;text-shadow:0 2px 14px #0b1020}
 .hero{background:radial-gradient(ellipse at 50% 0%,#2b1b6b 0%,var(--bg) 70%)}
 .ny{background:linear-gradient(#0b1020,#14183f 60%,#2a2058)}
@@ -101,7 +98,7 @@ p{font-size:16px;font-weight:300;line-height:1.7;color:#fdf6ece0;max-width:380px
 .cal strong{font-family:var(--serif);font-weight:400;font-size:92px;line-height:1.05}
 .cal span{font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--muted)}
 .count{display:flex;justify-content:center;gap:10px;margin-bottom:28px}
-.count div{width:72px;padding:12px 0;border-radius:16px;background:#fdf6ec14;border:1px solid #fdf6ec22;backdrop-filter:blur(6px)}
+.count div{width:72px;padding:12px 0;border-radius:16px;background:#fdf6ec17;border:1px solid #fdf6ec22}
 .count b{display:block;font-family:var(--serif);font-weight:400;font-size:30px;color:var(--gold);font-variant-numeric:tabular-nums}
 .count i{font-style:normal;font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.8}
 
@@ -114,7 +111,7 @@ p{font-size:16px;font-weight:300;line-height:1.7;color:#fdf6ece0;max-width:380px
 @media(hover:hover){.btn:hover{transform:translateY(-2px)}}
 
 .info{list-style:none;display:grid;gap:12px;margin:18px auto 24px;max-width:380px;text-align:left}
-.info li{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:18px;background:#fdf6ec12;border:1px solid #fdf6ec1f;backdrop-filter:blur(6px)}
+.info li{display:flex;gap:14px;align-items:center;padding:14px 16px;border-radius:18px;background:#fdf6ec14;border:1px solid #fdf6ec1f}
 .info span{font-size:14px;color:var(--gold)}
 .info b{font-family:var(--serif);font-style:italic;font-weight:400;font-size:20px;color:var(--gold)}
 .info p{margin:0;font-size:15px}
@@ -200,7 +197,7 @@ p{font-size:16px;font-weight:300;line-height:1.7;color:#fdf6ece0;max-width:380px
 
 /* Confirmación */
 .rsvp-card{display:grid;gap:16px;max-width:340px;margin:6px auto 20px;padding:20px 18px;border-radius:24px;text-align:left;text-shadow:none;
-  background:linear-gradient(160deg,#fdf6ec1a,#fdf6ec08);border:1px solid #e8c27a40;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+  background:linear-gradient(160deg,#fdf6ec1a,#fdf6ec08);border:1px solid #e8c27a40;
   box-shadow:0 18px 44px #0006,inset 0 1px 0 #fdf6ec22}
 .field{display:grid;gap:8px;position:relative}
 .field>span{font-family:var(--serif);font-style:italic;font-size:17px;color:var(--gold)}
