@@ -30,11 +30,11 @@ if ($('#wa')) $('#wa').href = wa(`¡Hola! Confirmo mi asistencia a la boda de ${
 const stations = $$('.station');
 const navLinks = $$('#nav a');
 const io = new IntersectionObserver(es => es.forEach(e => {
-  if (e.isIntersecting) {
+  if (e.isIntersecting && (e.intersectionRatio >= .45 || e.intersectionRect.height >= innerHeight * .45)) {
     e.target.classList.add('in');
     navLinks.forEach(a => a.classList.toggle('on', +a.dataset.i === stations.indexOf(e.target)));
   }
-}), { threshold: .45 });
+}), { threshold: [.1, .2, .3, .45] });
 stations.forEach(s => io.observe(s));
 $('#s0').classList.add('in');
 navLinks[0].classList.add('on');
