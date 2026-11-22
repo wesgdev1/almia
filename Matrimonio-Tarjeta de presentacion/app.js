@@ -11,7 +11,7 @@ const CONFIG = {
   dress: 'Elegante',
   contacto: 'Welinton',             // a quién contactar para confirmar
   mapa: 'https://maps.app.goo.gl/tkBqY3qtC4rA6KKz8',   // link de Google Maps
-  whatsapp: '',                          // ej: '573001234567' (código país + número, sin +)
+  whatsapp: '573208719438',             // código país + número, sin +
 };
 /* =================================== */
 
@@ -24,6 +24,7 @@ $('#map').href = $('#venue').href = CONFIG.mapa;
 const wa = msg => `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`;
 $('#yes').href = wa(`¡Hola! Confirmo mi asistencia a la boda de ${CONFIG.n1} & ${CONFIG.n2} el 20 de febrero 🎉`);
 $('#no').href = wa(`Hola ${CONFIG.n1} & ${CONFIG.n2}, lamentablemente no podré asistir a la boda 😢 ¡Los quiero!`);
+if ($('#wa')) $('#wa').href = wa(`¡Hola! Confirmo mi asistencia a la boda de ${CONFIG.n1} & ${CONFIG.n2} 🎉`);
 
 // Reveal + nav activo
 const stations = $$('.station');
