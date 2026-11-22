@@ -17,12 +17,19 @@ body{background:var(--deep);color:var(--ivory);font-family:var(--sans);overflow-
 #road{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:1}
 #road path{fill:none;stroke-linecap:round}
 #road-bg{stroke:rgba(246,237,225,.18);stroke-width:3;stroke-dasharray:2 12}
-#road-fg{stroke:var(--gold);stroke-width:3;filter:drop-shadow(0 0 6px var(--gold))}
-#walker{position:absolute;left:0;top:0;z-index:3;width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;
-  display:grid;place-items:center;font-size:20px;color:#fff;background:linear-gradient(135deg,#ff7a9c,var(--accent));
-  box-shadow:0 0 0 6px rgba(244,182,194,.2),0 0 24px rgba(255,90,130,.8);will-change:transform;
-  animation:beat 1s ease-in-out infinite}
-@keyframes beat{50%{box-shadow:0 0 0 12px rgba(244,182,194,.08),0 0 34px rgba(255,90,130,1)}}
+#road-fg{stroke:var(--gold);stroke-width:3.5}
+/* Perrita caminante: solo se anima transform/opacity (GPU), sin repintar */
+#walker{position:absolute;left:0;top:0;z-index:3;width:48px;height:48px;margin:-24px 0 0 -24px;border-radius:50%;
+  background:radial-gradient(circle at 50% 40%,#fff,var(--ivory));border:2px solid var(--gold);
+  box-shadow:0 4px 16px #0008;will-change:transform}
+#walker img{position:absolute;inset:2px;width:40px;height:40px;border-radius:50%;object-fit:contain}
+#walker::before{content:"";position:absolute;inset:-4px;border-radius:50%;border:2px solid var(--gold);
+  animation:halo 1.6s ease-out infinite}
+#walker b{position:absolute;right:-14px;top:50%;width:22px;height:22px;margin-top:-11px;border-radius:50%;display:grid;place-items:center;
+  font-size:12px;font-weight:400;line-height:1;color:#fff;background:linear-gradient(135deg,#ff7a9c,var(--accent));
+  box-shadow:0 2px 8px #e8456d88;animation:beat 1s ease-in-out infinite}
+@keyframes halo{from{transform:scale(1);opacity:.7}to{transform:scale(1.45);opacity:0}}
+@keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
 
 /* Nav */
 #nav{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:20;
@@ -187,7 +194,7 @@ p{font-size:16px;font-weight:300;line-height:1.7;color:#fdf6ece0;max-width:380px
 .btn.wa svg{width:20px;height:20px;fill:#25d366;flex:none}
 
 /* Reveal ultra rápido (solo transform/opacity) */
-.reveal{opacity:0;transform:translateY(22px) scale(.98);transition:opacity .35s ease-out,transform .35s cubic-bezier(.2,.8,.2,1);will-change:transform,opacity}
+.reveal{opacity:0;transform:translateY(22px) scale(.98);transition:opacity .35s ease-out,transform .35s cubic-bezier(.2,.8,.2,1)}
 .reveal.d1{transition-delay:.04s}.reveal.d2{transition-delay:.08s}.reveal.d3{transition-delay:.12s}.reveal.d4{transition-delay:.16s}
 .in .reveal{opacity:1;transform:none}
 

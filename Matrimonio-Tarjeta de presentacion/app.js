@@ -39,11 +39,15 @@ stations.forEach(s => io.observe(s));
 $('#s0').classList.add('in');
 navLinks[0].classList.add('on');
 
-// Camino sinuoso + corazón que avanza con el scroll
+// Camino sinuoso + perrita que avanza con el scroll
+// Optimizado para celular: el recorrido se precalcula una vez (tabla de puntos)
+// y en cada frame solo se interpola; el parallax usa posiciones cacheadas (sin leer el layout).
 const main = $('#journey'), fg = $('#road-fg'), bg = $('#road-bg'), walker = $('#walker'), bar = $('#bar');
-let L = 1, top0 = 0, H = 1;
+const pars = $$('[data-par]');
+let L = 1, H = 1, W0 = 0, pts = new Float32Array(0), N = 0, mainTop = 0, lastP = -1;
 function buildRoad() {
-  const w = main.clientWidth; H = main.clientHeight;
+  const w = main.clientWidth;
+  W0 = w; H = main.clientHeight; mainTop = main.offsetTop;
   $('#road').setAttribute('viewBox', `0 0 ${w} ${H}`);
   let d = `M${w / 2} 60`, py = 60;
   stations.forEach((s, i) => {
@@ -54,26 +58,43 @@ function buildRoad() {
   bg.setAttribute('d', d); fg.setAttribute('d', d);
   L = fg.getTotalLength();
   fg.style.strokeDasharray = L;
+  // Tabla de puntos: 1 muestra cada ~6px de camino
+  N = Math.max(2, Math.min(2500, Math.ceil(L / 6)));
+  pts = new Float32Array(N * 2);
+  for (let i = 0; i < N; i++) {
+    const q = fg.getPointAtLength(L * i / (N - 1));
+    pts[i * 2] = q.x; pts[i * 2 + 1] = q.y;
+  }
+  // Posición/alto de la sección de cada foto con parallax (cacheado)
+  pars.forEach(el => { const s = el.closest('.station') || el.parentElement; el._t = s.offsetTop; el._h = s.offsetHeight; el._k = +el.dataset.par; });
+  lastP = -1;
   update();
 }
 function update() {
-  const y = scrollY + innerHeight * .5;
-  const p = Math.min(1, Math.max(0, y / H));
-  const pt = fg.getPointAtLength(p * L);
-  walker.style.transform = `translate3d(${pt.x}px,${pt.y}px,0)`;
-  fg.style.strokeDashoffset = L * (1 - p);
-  bar.style.transform = `scaleX(${Math.min(1, scrollY / (H - innerHeight))})`;
+  const sy = scrollY, vh = innerHeight;
+  const p = Math.min(1, Math.max(0, (sy + vh * .5) / H));
+  if (p !== lastP) {
+    lastP = p;
+    const f = p * (N - 1), i = Math.min(N - 2, f | 0), t = f - i, j = i * 2;
+    const x = pts[j] + (pts[j + 2] - pts[j]) * t, y = pts[j + 1] + (pts[j + 3] - pts[j + 1]) * t;
+    walker.style.transform = `translate3d(${x}px,${y}px,0)`;
+    fg.style.strokeDashoffset = L * (1 - p);
+    bar.style.transform = `scaleX(${Math.min(1, sy / Math.max(1, H - vh))})`;
+  }
   // Parallax suave de fotos (solo las visibles)
-  pars.forEach(el => {
-    const r = el.parentElement.getBoundingClientRect();
-    if (r.bottom < -100 || r.top > innerHeight + 100) return;
-    el.style.transform = `translate3d(0,${((r.top + r.height / 2) - innerHeight / 2) * el.dataset.par}px,0)`;
-  });
+  for (const el of pars) {
+    const top = mainTop + el._t - sy;
+    if (top + el._h < -100 || top > vh + 100) continue;
+    el.style.transform = `translate3d(0,${((top + el._h / 2) - vh / 2) * el._k}px,0)`;
+  }
 }
-const pars = $$('[data-par]');
 let tick = false;
 addEventListener('scroll', () => { if (!tick) { tick = true; requestAnimationFrame(() => { update(); tick = false; }); } }, { passive: true });
-addEventListener('resize', buildRoad);
+// En celular la barra del navegador cambia el alto al hacer scroll: solo reconstruimos si cambió el tamaño real
+let rz;
+const rebuild = () => { clearTimeout(rz); rz = setTimeout(() => { if (main.clientWidth !== W0 || main.clientHeight !== H) buildRoad(); else update(); }, 120); };
+addEventListener('resize', rebuild);
+if ('ResizeObserver' in window) new ResizeObserver(rebuild).observe(main);
 addEventListener('load', buildRoad);
 buildRoad();
 
