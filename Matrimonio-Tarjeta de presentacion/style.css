@@ -178,6 +178,8 @@ p{font-size:16px;font-weight:300;line-height:1.7;color:#fdf6ece0;max-width:380px
 .looks{display:grid;grid-template-columns:1fr 1fr;gap:12px;max-width:380px;margin:20px auto 0}
 .looks figure{aspect-ratio:3/4;border-radius:18px;overflow:hidden;background:#fdf6ec0d}
 .looks img{width:100%;height:100%;object-fit:cover;display:block}
+.looks.wide{grid-template-columns:1fr}
+.looks.wide figure{aspect-ratio:3/2;box-shadow:0 12px 30px #0006;border:1px solid #fdf6ec1f}
 .looks .empty{display:grid;place-items:center;border:1px dashed #fdf6ec44}
 .looks .empty span{font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:#fdf6ec88}
 
