@@ -32,6 +32,18 @@ body{background:var(--deep);color:var(--ivory);font-family:var(--sans);overflow-
 @keyframes halo{from{transform:scale(1);opacity:.7}to{transform:scale(1.45);opacity:0}}
 @keyframes beat{0%,100%{transform:scale(1)}15%{transform:scale(1.25)}30%{transform:scale(1)}45%{transform:scale(1.15)}}
 
+/* ===== Modo súper fluido: animaciones guiadas por el scroll (corren en el hilo del scroll) ===== */
+html.sda #walker{position:absolute;margin:0;transform:none;offset-rotate:0deg;offset-anchor:50% 50%;offset-distance:0%;
+  animation:walk linear both;animation-timeline:scroll(root block)}
+html.sda #road-fg{animation:draw linear both;animation-timeline:scroll(root block)}
+html.sda #bar{animation:grow linear both;animation-timeline:scroll(root block)}
+html.sda .station{view-timeline:--st block}
+html.sda [data-par]{animation:par linear both;animation-timeline:--st;animation-range:cover 0% cover 100%}
+@keyframes walk{to{offset-distance:100%}}
+@keyframes draw{from{stroke-dashoffset:var(--L)}to{stroke-dashoffset:0}}
+@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes par{from{transform:translate3d(0,calc(var(--k) * 100vh),0)}to{transform:translate3d(0,calc(var(--k) * -100vh),0)}}
+
 /* Nav */
 #nav{position:fixed;top:0;left:50%;transform:translateX(-50%);width:100%;max-width:520px;z-index:20;
   display:flex;justify-content:space-between;padding:calc(10px + env(safe-area-inset-top)) 14px 22px;
